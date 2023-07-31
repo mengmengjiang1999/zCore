@@ -61,6 +61,7 @@ const PCI_BASE: usize = 0x30000000;
 #[cfg(target_arch = "riscv64")]
 const E1000_BASE: usize = 0x40000000;
 // riscv64 Qemu
+// PMP可能引发错误，可选 0x20000000
 
 #[cfg(target_arch = "x86_64")]
 const PCI_ACCESS: CSpaceAccessMethod = CSpaceAccessMethod::IO;

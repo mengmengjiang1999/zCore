@@ -51,6 +51,6 @@ pub extern "C" fn trap_handler(tf: &mut TrapFrame) {
                 set_current_thread(current_thread);
             }
         }
-        other => panic!("Undefined trap: {:x?} {:#x?}", other, tf),
+        other => panic!("Undefined trap: {:x?} = {:#x}\n{:#x?}", other, scause.bits(), tf),
     }
 }

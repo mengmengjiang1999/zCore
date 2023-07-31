@@ -71,6 +71,7 @@ Use docker container as standand develop environment, please refer to [tootls/do
 make image ARCH=riscv64
 cd zCore
 make run ARCH=riscv64 LINUX=1
+#OR make run LINUX=1 MODE=release SMP=1 ARCH=riscv64 PLATFORM=qemu LOG=debug
 ```
 ---
 - step 1: Prepare Alpine Linux rootfs:

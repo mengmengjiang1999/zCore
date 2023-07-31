@@ -174,7 +174,7 @@ pub fn init(
     size: usize,
     index: usize,
 ) -> DeviceResult<E1000Interface> {
-    info!("Probing e1000 {}", name);
+    info!("Probing e1000 {} @ {:#x}", name, header);
 
     // randomly generated
     let mac: [u8; 6] = [0x54, 0x51, 0x9F, 0x71, 0xC0, index as u8];

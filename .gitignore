@@ -4,6 +4,7 @@
 
 **/target
 *.img
+*.vi
 
 /ignored
 /rootfs
