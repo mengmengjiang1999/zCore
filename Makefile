@@ -22,10 +22,18 @@ update:
 # put rootfs for linux mode
 rootfs:
 ifeq ($(ARCH), riscv64)
-	@mkdir -p rootfs/riscv/bin
-	@ln -sf busybox rootfs/riscv/bin/ls
-	@[ -e rootfs/riscv/bin/busybox ] || \
-		wget https://github.com/rcore-os/busybox-prebuilts/raw/master/busybox-1.30.1-riscv64/busybox -O rootfs/riscv/bin/busybox
+	@mkdir -p rootfs/$(ARCH)/bin
+	@ln -sf busybox rootfs/$(ARCH)/bin/ls
+	@[ -e rootfs/$(ARCH)/bin/busybox ] || \
+		wget https://github.com/rcore-os/busybox-prebuilts/raw/master/busybox-1.30.1-riscv64/busybox -O rootfs/$(ARCH)/bin/busybox
+
+else ifeq ($(ARCH), aarch64)
+	@[ -e rootfs/testsuits-aarch64-linux-musl.tgz ] || \
+		wget https://github.com/rcore-os/testsuits-for-oskernel/releases/download/final-20240222/testsuits-aarch64-linux-musl.tgz -O rootfs/testsuits-aarch64-linux-musl.tgz
+	@[ -e rootfs/aarch64/busybox ] || tar xf rootfs/testsuits-aarch64-linux-musl.tgz  -C rootfs/
+	@[ -e rootfs/aarch64/busybox ] || mv rootfs/testsuits-aarch64-linux-musl rootfs/aarch64
+	@ln -sf busybox rootfs/aarch64/bin/ls
+	@cp rootfs/aarch64/busybox rootfs/aarch64/bin/
 else
 	cargo rootfs --arch $(ARCH)
 endif
@@ -42,10 +50,10 @@ other-test:
 
 # build image from rootfs
 image: rootfs
-ifeq ($(ARCH), riscv64)
-	@echo building riscv.img
-	@rcore-fs-fuse zCore/riscv64.img rootfs/riscv zip
-	@qemu-img resize -f raw zCore/riscv64.img +200K
+ifneq ($(filter $(ARCH),riscv64 aarch64),)
+	@echo Creating zCore/$(ARCH).img
+	@rcore-fs-fuse zCore/$(ARCH).img rootfs/$(ARCH) zip
+	@qemu-img resize -f raw zCore/$(ARCH).img +200K
 else
 	cargo image --arch $(ARCH)
 endif

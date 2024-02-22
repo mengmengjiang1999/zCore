@@ -73,6 +73,15 @@ cd zCore
 make run ARCH=riscv64 LINUX=1
 #OR make run LINUX=1 MODE=release SMP=1 ARCH=riscv64 PLATFORM=qemu LOG=debug
 ```
+
+**Quick start for AARCH64**
+
+```sh
+make image ARCH=aarch64
+cd zCore
+make run LINUX=1 ARCH=aarch64 PLATFORM=qemu LOG=warn
+```
+
 ---
 - step 1: Prepare Alpine Linux rootfs:
 
