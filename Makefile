@@ -32,9 +32,9 @@ else ifeq ($(ARCH), x86_64)
 	@[ -e rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz ] || \
 		wget http://dl-cdn.alpinelinux.org/alpine/v3.12/releases/x86_64/alpine-minirootfs-3.12.0-x86_64.tar.gz -O rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz
 	@[ -e rootfs/$(ARCH)/bin/busybox ] || tar xf rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz -C rootfs/$(ARCH)
+	@cp -rf rootfs/$(ARCH) rootfs/libos
 # libc-libos.so (convert syscall to function call) is from https://github.com/rcore-os/musl/tree/rcore
-	@cp prebuilt/linux/libc-libos.so rootfs/$(ARCH)/lib/ld-musl-x86_64.so.1
-	@ln -sf $(ARCH) rootfs/libos
+	@cp prebuilt/linux/libc-libos.so rootfs/libos/lib/ld-musl-x86_64.so.1
 
 else ifeq ($(ARCH), aarch64)
 	@[ -e rootfs/testsuits-aarch64-linux-musl.tgz ] || \

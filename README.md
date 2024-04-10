@@ -44,6 +44,7 @@ Use docker container as standand develop environment, please refer to [tootls/do
 - step 2: Compile & Run native Linux program (Busybox) in libos mode:
 
   ```sh
+  cd zCore
   cargo run --release --features "linux libos" -- /bin/busybox [args]
   ```
 
@@ -56,6 +57,7 @@ Use docker container as standand develop environment, please refer to [tootls/do
 - step 1: Compile and Run Zircon shell
 
   ```sh
+  cd zCore
   cargo run --release --features "zircon libos" -- prebuilt/zircon/x64/bringup.zbi
   ```
 
