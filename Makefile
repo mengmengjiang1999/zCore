@@ -27,15 +27,32 @@ ifeq ($(ARCH), riscv64)
 	@[ -e rootfs/$(ARCH)/bin/busybox ] || \
 		wget https://github.com/rcore-os/busybox-prebuilts/raw/master/busybox-1.30.1-riscv64/busybox -O rootfs/$(ARCH)/bin/busybox
 
+else ifeq ($(ARCH), x86_64)
+	@mkdir -p rootfs/$(ARCH)
+	@[ -e rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz ] || \
+		wget http://dl-cdn.alpinelinux.org/alpine/v3.12/releases/x86_64/alpine-minirootfs-3.12.0-x86_64.tar.gz -O rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz
+	@[ -e rootfs/$(ARCH)/bin/busybox ] || tar xf rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz -C rootfs/$(ARCH)
+# libc-libos.so (convert syscall to function call) is from https://github.com/rcore-os/musl/tree/rcore
+	@cp prebuilt/linux/libc-libos.so rootfs/$(ARCH)/lib/ld-musl-x86_64.so.1
+	@ln -sf $(ARCH) rootfs/libos
+
 else ifeq ($(ARCH), aarch64)
 	@[ -e rootfs/testsuits-aarch64-linux-musl.tgz ] || \
 		wget https://github.com/rcore-os/testsuits-for-oskernel/releases/download/final-20240222/testsuits-aarch64-linux-musl.tgz -O rootfs/testsuits-aarch64-linux-musl.tgz
-	@[ -e rootfs/aarch64/busybox ] || tar xf rootfs/testsuits-aarch64-linux-musl.tgz  -C rootfs/
-	@[ -e rootfs/aarch64/busybox ] || mv rootfs/testsuits-aarch64-linux-musl rootfs/aarch64
-	@ln -sf busybox rootfs/aarch64/bin/ls
-	@cp rootfs/aarch64/busybox rootfs/aarch64/bin/
+	@[ -e rootfs/$(ARCH)/busybox ] || tar xf rootfs/testsuits-aarch64-linux-musl.tgz  -C rootfs/
+	@[ -e rootfs/$(ARCH)/busybox ] || mv rootfs/testsuits-aarch64-linux-musl rootfs/$(ARCH)
+	@ln -sf busybox rootfs/$(ARCH)/bin/ls
+	@cp rootfs/$(ARCH)/busybox rootfs/$(ARCH)/bin/
 else
 	cargo rootfs --arch $(ARCH)
+endif
+
+rcore_fs_fuse_revision := 98cfeec
+
+rcore-fs-fuse:
+ifneq ($(shell rcore-fs-fuse dir image git-version), $(rcore_fs_fuse_revision))
+	@echo Installing rcore-fs-fuse
+	@cd ~ && cargo install rcore-fs-fuse --git https://github.com/elliott10/rcore-fs --rev $(rcore_fs_fuse_revision) --force
 endif
 
 # put libc tests into rootfs
@@ -49,8 +66,8 @@ other-test:
 	cargo other-test --arch $(ARCH)
 
 # build image from rootfs
-image: rootfs
-ifneq ($(filter $(ARCH),riscv64 aarch64),)
+image: rcore-fs-fuse rootfs
+ifneq ($(filter $(ARCH),riscv64 aarch64 x86_64),)
 	@echo Creating zCore/$(ARCH).img
 	@rcore-fs-fuse zCore/$(ARCH).img rootfs/$(ARCH) zip
 	@qemu-img resize -f raw zCore/$(ARCH).img +200K
