@@ -65,6 +65,10 @@ Use docker container as standand develop environment, please refer to [tootls/do
 
   To debug, set the `LOG` environment variable to one of `error`, `warn`, `info`, `debug`, `trace`.
 
+  如果想要更新submodules，只需要在命令行：
+
+  `git submodule update --init --recursive`
+
 #### Run native Zircon program (shell) in zircon-libos mode:
 
 - step 1: Compile and Run Zircon shell
