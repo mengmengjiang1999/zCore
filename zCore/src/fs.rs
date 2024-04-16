@@ -4,13 +4,31 @@ cfg_if! {
         use rcore_fs::vfs::FileSystem;
 
         #[cfg(feature = "libos")]
+        // pub fn rootfs() -> Arc<dyn FileSystem> {
+        //     let  rootfs = if let Ok(dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        //         std::path::Path::new(&dir).parent().unwrap().to_path_buf()
+        //     } else {
+        //         std::env::current_dir().unwrap()
+        //     };
+        //     println!("{}",std::env::var("CARGO_MANIFEST_DIR").unwrap());
+        //     println!("{}",rootfs.display());
+        //     println!("{}",rootfs.join("rootfs").display());
+        //     println!("{}",rootfs.join("rootfs").join("libos").display());
+        //     rcore_fs_hostfs::HostFS::new(rootfs.join("rootfs").join("libos"))
+        //     // rcore_fs_hostfs::HostFS::new(rootfs.join("libos"))
+        // }
         pub fn rootfs() -> Arc<dyn FileSystem> {
             let  rootfs = if let Ok(dir) = std::env::var("CARGO_MANIFEST_DIR") {
-                std::path::Path::new(&dir).parent().unwrap().to_path_buf()
+                std::path::Path::new(&dir).to_path_buf()
             } else {
                 std::env::current_dir().unwrap()
             };
-            rcore_fs_hostfs::HostFS::new(rootfs.join("rootfs").join("libos"))
+            println!("{}",std::env::var("CARGO_MANIFEST_DIR").unwrap());
+            println!("{}",rootfs.display());
+            // println!("{}",rootfs.join("rootfs").display());
+            // println!("{}",rootfs.join("rootfs").join("libos").display());
+            // rcore_fs_hostfs::HostFS::new(rootfs.join("rootfs").join("libos"))
+            rcore_fs_hostfs::HostFS::new(rootfs.join("libos"))
         }
 
         #[cfg(not(feature = "libos"))]
