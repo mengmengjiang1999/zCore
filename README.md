@@ -25,7 +25,7 @@ Environments：
 Clone repo and pull prebuilt fuchsia images:
 
 ```sh
-git clone https://github.com/rcore-os/zCore --recursive
+git clone https://github.com/elliott10/zCore.git --recursive
 cd zCore
 make setup
 ```
@@ -46,6 +46,14 @@ Use docker container as standand develop environment, please refer to [tootls/do
   ```sh
   cargo run --release --features "linux libos" -- /bin/busybox [args]
   ```
+
+  export CARGO_MANIFEST_DIR=~/Project/fuzzing/zCore-fuzzing/zcore-test/zCore/rootfs
+  export CARGO_MANIFEST_DIR=~/Project/fuzzing/zCore-fuzzing/zcore-test/corpus/rootfs/
+
+  修改fs.rs代码后：
+  export CARGO_MANIFEST_DIR=~/Project/fuzzing/zCore-fuzzing/zcore-test/corpus
+
+  /home/mmj/Project/fuzzing/zCore-fuzzing/zcore-test/zCore/target/release/zcore /bin/busybox
 
   You can also add the feature `graphic` to show the graphical output (with [sdl2](https://www.libsdl.org) installed).
 

@@ -27,6 +27,15 @@ ifeq ($(ARCH), riscv64)
 	@[ -e rootfs/$(ARCH)/bin/busybox ] || \
 		wget https://github.com/rcore-os/busybox-prebuilts/raw/master/busybox-1.30.1-riscv64/busybox -O rootfs/$(ARCH)/bin/busybox
 
+else ifeq ($(ARCH), x86_64)
+	@mkdir -p rootfs/$(ARCH)
+	@[ -e rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz ] || \
+		wget http://dl-cdn.alpinelinux.org/alpine/v3.12/releases/x86_64/alpine-minirootfs-3.12.0-x86_64.tar.gz -O rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz
+	@[ -e rootfs/$(ARCH)/bin/busybox ] || tar xf rootfs/alpine-minirootfs-3.12.0-x86_64.tar.gz -C rootfs/$(ARCH)
+	@cp -rf rootfs/$(ARCH) rootfs/libos
+# libc-libos.so (convert syscall to function call) is from https://github.com/rcore-os/musl/tree/rcore
+	@cp prebuilt/linux/libc-libos.so rootfs/libos/lib/ld-musl-x86_64.so.1
+
 else ifeq ($(ARCH), aarch64)
 	@[ -e rootfs/testsuits-aarch64-linux-musl.tgz ] || \
 		wget https://github.com/rcore-os/testsuits-for-oskernel/releases/download/final-20240222/testsuits-aarch64-linux-musl.tgz -O rootfs/testsuits-aarch64-linux-musl.tgz
