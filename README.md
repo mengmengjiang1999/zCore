@@ -48,13 +48,18 @@ Use docker container as standand develop environment, please refer to [tootls/do
   cargo run --release --features "linux libos" -- /bin/busybox [args]
   ```
 
-  export CARGO_MANIFEST_DIR=~/Project/fuzzing/zCore-fuzzing/zcore-test/zCore/rootfs
-  export CARGO_MANIFEST_DIR=~/Project/fuzzing/zCore-fuzzing/zcore-test/corpus/rootfs/
+  当然了，按照以上方法，编译出来的zcore会默认认为根目录在`./rootfs/libos`，可以通过以下命令修改默认根目录。
+  我对./zCore/src/fs.rs中的代码进行了一定修改之后的方式。比如说我现在想要让根目录放在corpus目录下，与此同时busybox的绝对路径是
 
-  修改fs.rs代码后：
+  `~/Project/fuzzing/zCore-fuzzing/zcore-test/corpus/libos/bin/busybox`
+  
+  就需要：
+
+  ```sh
   export CARGO_MANIFEST_DIR=~/Project/fuzzing/zCore-fuzzing/zcore-test/corpus
-
+  cargo run --release --features "linux libos"
   /home/mmj/Project/fuzzing/zCore-fuzzing/zcore-test/zCore/target/release/zcore /bin/busybox
+  ```
 
   You can also add the feature `graphic` to show the graphical output (with [sdl2](https://www.libsdl.org) installed).
 
