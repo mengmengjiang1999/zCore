@@ -116,11 +116,13 @@ C910 Light开发板是一块四方形大板，配置接口很丰富，包括了�
 
 通过gdb连接JTAG DEBUG Server后，便可以单步调试C910 CPU的指令执行了，不过偶尔也会有无法下断点的问题，需要先把zCore系统镜像加载到内存之后，再下函数断点。
 
+#### 字符串打印输出
+
 在JTAG的单步调试过程中，发现在执行指令`ecall SBI_CONSOLE_PUTCHAR`之后，没有任何反应，理论上应该会有字符从串口输出。这里考虑没有有效的opensbi，要么串口驱动有问题。
 
 解决print问题，解决串口输出比较直接，于是参照u-boot的串口代码，把串口输出的基本功能使能，代码如下：
 
-```
+```rust
 // T-HEAD C910 light
 pub fn uart_put(c: u8) {
     let ptr = BADDR as *mut u32;
@@ -190,13 +192,34 @@ Linux代码是zCore开发中非常好的参照，这里开始对照Linux的切�
 
 <img src="img/c910-linux-pg.png" alt="c910 pagetable" style="zoom:75%;" />
 
-Linux源码中的riscv架构下，在构建虚拟内存页表项时，
+#### 平头哥CPU的页表项
 
-为内核镜像内存地址空间`PAGE_KERNEL`添加相比普通页表的额外的flags属性：`CACHE`,`SHARE`,`BUF`；
+C910/C920V1支持两种内存类型，分别是内存（Memory）和外设（Device），由SO位区分。SO 区域不能存放指令和页表。
+为了支持多核之间数据共享，C910/C920V1 增加了可共享的页面属性（Shareable，SH）。 
 
-为设备地址空间`PAGE_IOREMAP`添加额外的属性：`SHARE`,`SO`;
+若遇到原子指令操作的错误，如 atomic_add 问题，则需要设置好Memory的页表项拓展属性；设备空间初始化时，其页表项必须Non-cacheable.
+
+<img width="146" height="77" alt="屏幕快照 2026-03-20 下午6 48 48" src="https://github.com/user-attachments/assets/d80f2fbd-36f5-47b3-9be8-ca64966794c0" />
+
+`0b 0111 [1]`
+* Memory: 非SO[/SO], Shareable
+	- Cacheable
+	- Non-cacheable
+
+`0b 1001 [1]`
+* Device: SO, Non-cacheable, Shareable
+	- Bufferable
+	- Non-bufferable
+
+Linux源码中的riscv架构下，在构建虚拟内存页表项时
+
+- ![#ffff00](https://placehold.co/15x15/ffff00/ffff00.png) 为内核镜像内存地址空间`PAGE_KERNEL`添加相比普通页表的额外的flags属性位：`bit[62] CACHE`,`bit[61] BUF`，`bit[60] SHARE`；
+
+- ![#ffff00](https://placehold.co/15x15/ffff00/ffff00.png) 为设备地址空间`PAGE_IOREMAP`添加额外的属性：`bit[63] SO`，`bit[60] SHARE`;
 
 这些页表项的额外的flags属性位，可以通过查询C910芯片手册获知其定义信息，C910额外页面属性位于`63:59`位，包括了`SO`, `CACHE`, `BUF`, `SHARE`, `SEC`
+
+当mxstatus.maee打开，pte 中扩展的页面属性起作用
 
 更加其他CPU芯片手册，可指导这些平头哥CPU的拓展属性，不单在C910中存在，在C906 CPU中通用存在。
 
@@ -204,7 +227,8 @@ Linux源码中的riscv架构下，在构建虚拟内存页表项时，
 
 zCore中先尝试把内核的`CACHE`,`SHARE`,`BUF`这些位在构建内核页表时置位上，启动发现问题依旧，依然停在切换页表`switch table`之后，原因不详？？？
 
- 既然基于RISCV标准进行自定义拓展的位，理论上应该是可以关闭的吧，于是继续在芯片手册中查找，果然在拓展状态寄存器`MXSTATUS`中找到了相应的设置位`MAEE`
+#### 拓展状态寄存器`MXSTATUS`
+既然基于RISCV标准进行自定义拓展的位，理论上应该是可以关闭的吧，于是继续在芯片手册中查找，果然在拓展状态寄存器`MXSTATUS`中找到了相应的设置位`MAEE`
 
 ![c910 mxstatus](img/c910-mxstatus.png)
 

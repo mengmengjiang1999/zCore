@@ -71,7 +71,8 @@ fn init_kernel_page_table() -> PagingResult<PageTable> {
         )?;
     }
     cfg_if! {
-    if #[cfg(any(feature = "board-qemu", feature = "board-fu740", feature = "board-c910light"))] {
+    if #[cfg(any(feature = "board-qemu", feature = "board-fu740",
+                 feature = "board-c910light", feature = "board-d1",))] {
         extern "C" {
             fn boot_stack();
             fn boot_stack_top();
@@ -181,16 +182,8 @@ impl From<MMUFlags> for PTF {
         let mut flags = PTF::VALID;
         if f.contains(MMUFlags::WRITE) {
             flags |= PTF::READABLE | PTF::WRITABLE;
-            #[cfg(feature = "thead-maee")]
-            {
-                flags |= PTF::CACHEABLE;
-            }
         } else if f.contains(MMUFlags::READ) {
             flags |= PTF::READABLE;
-            #[cfg(feature = "thead-maee")]
-            {
-                flags |= PTF::CACHEABLE;
-            }
         }
         if f.contains(MMUFlags::EXECUTE) {
             flags |= PTF::EXECUTABLE;
@@ -198,9 +191,12 @@ impl From<MMUFlags> for PTF {
         if f.contains(MMUFlags::USER) {
             flags |= PTF::USER;
         }
+
         #[cfg(feature = "thead-maee")]
         if f.contains(MMUFlags::DEVICE) {
             flags |= PTF::STRONG_ORDER;
+        } else {
+            flags |= PTF::CACHEABLE;
         }
         flags
     }
